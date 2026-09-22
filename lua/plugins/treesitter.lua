@@ -14,6 +14,7 @@ return {
 		"html",
 		"css",
 		"javascript",
+                "bash",
 	    },
 	})
     end,

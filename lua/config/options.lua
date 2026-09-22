@@ -10,6 +10,7 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 750
+vim.opt.showmode = false
 
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
@@ -33,3 +34,5 @@ vim.keymap.set('v', '<Down>', '<nop>')
 vim.keymap.set('v', '<Left>', '<nop>')
 vim.keymap.set('v', '<Right>', '<nop>')
 
+vim.keymap.set('v', '<A-j>', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', '<A-k>', ":m '<-2<CR>gv=gv")

@@ -1,5 +1,4 @@
 return {
-    -- 1. MASON (Менеджер бинарников)
     {
         'williamboman/mason.nvim',
         config = function()
@@ -7,7 +6,6 @@ return {
         end,
     },
 
-    -- 2. MASON-LSPCONFIG (Автоматический запуск и настройки)
     {
         'williamboman/mason-lspconfig.nvim',
         dependencies = {
@@ -20,60 +18,50 @@ return {
 
             require('mason-lspconfig').setup({
                 ensure_installed = {
-                    'lua_ls',       -- Lua
-                    'basedpyright', -- Python (типы)
-                    'ruff',         -- Python (быстрый линтер + форматирование)
-                    'ts_ls',        -- JS/TS
-                    'html',         -- HTML
-                    'cssls',        -- CSS
-                    'clangd',       -- C/C++
+                    'basedpyright',
+                    'ruff',
+                    'clangd',
                 },
                 handlers = {
                     function(server_name)
-                        local opts = { capabilities = capabilities }
-
-                        -- Убираем жёлтые предупреждения (W): сообщаем lua_ls про глобальный объект vim
-                        if server_name == 'lua_ls' then
-                            opts.settings = {
-                                Lua = {
-                                    diagnostics = {
-                                        globals = { 'vim' },
-                                    },
-                                    workspace = {
-                                        library = vim.api.nvim_get_runtime_file('', true),
-                                        checkThirdParty = false,
-                                    },
-                                },
-                            }
-                        end
-
-                        require('lspconfig')[server_name].setup(opts)
+                        require('lspconfig')[server_name].setup({
+                            capabilities = capabilities,
+                        })
                     end,
                 },
             })
 
-            -- Быстрая починка кода (Code Actions) на <Space> + c
             vim.api.nvim_create_autocmd('LspAttach', {
-                group = vim.api.nvim_create_augroup('UserLspConfig', {}),
                 callback = function(ev)
                     local opts = { buffer = ev.buf }
                     vim.keymap.set({ 'n', 'v' }, '<space>c', vim.lsp.buf.code_action, opts)
+                    vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
+                end,
+            })
+
+            vim.api.nvim_create_autocmd('BufWritePre', {
+                callback = function(args)
+                    vim.lsp.buf.format({ bufnr = args.buf, async = false })
                 end,
             })
         end,
     },
 
-    -- 3. NVIM-CMP (Автодополнение по TAB)
     {
         'hrsh7th/nvim-cmp',
         dependencies = {
             'hrsh7th/cmp-nvim-lsp',
+            'hrsh7th/cmp-buffer',
             'L3MON4D3/LuaSnip',
             'saadparwaiz1/cmp_luasnip',
+            'windwp/nvim-autopairs',
         },
         config = function()
             local cmp = require('cmp')
             local luasnip = require('luasnip')
+            local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+
+            cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
 
             cmp.setup({
                 snippet = {
@@ -93,6 +81,7 @@ return {
                 sources = cmp.config.sources({
                     { name = 'nvim_lsp' },
                     { name = 'luasnip' },
+                    { name = 'buffer' },
                 }),
             })
         end,
